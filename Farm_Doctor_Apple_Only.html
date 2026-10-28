@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>사과 과수화상병 AI 판별 안내</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- FontAwesome Icons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<!-- Google Fonts Inter & Noto Sans KR -->
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        sage: {
+                            50: '#f4f7f5',
+                            100: '#e3ece5',
+                            300: '#A3C1AD',
+                            500: '#628373',
+                            700: '#2f3e46',
+                        },
+                        cream: '#FDFBF7',
+                        dustyRed: {
+                            DEFAULT: '#E07A5F',
+                            light: '#F8D8D0',
+                            dark: '#C95335'
+                        },
+                        pearGold: {
+                            DEFAULT: '#D8C3A5',
+                            light: '#F5EFEB',
+                            dark: '#A88D67'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Noto Sans KR', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 30px -5px rgba(0, 0, 0, 0.05), 0 4px 12px -2px rgba(0, 0, 0, 0.03)',
+                        'float': '0 15px 35px -5px rgba(47, 62, 70, 0.18), 0 5px 15px rgba(0, 0, 0, 0.08)'
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #FDFBF7;
+            font-family: 'Noto Sans KR', sans-serif;
+            color: #2F3E46;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #FDFBF7;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #A3C1AD;
+            border-radius: 9999px;
+        }
+
+        /* Pulse Animation for Alert */
+        @keyframes subtlePulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.02); opacity: 0.95; }
+        }
+        .animate-alert {
+            animation: subtlePulse 2s infinite ease-in-out;
+        }
+
+        /* Glassmorphism Floating Navigation */
+        .floating-nav {
+            position: fixed;
+            right: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(163, 193, 173, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .floating-nav {
+                right: 50%;
+                top: auto;
+                bottom: 20px;
+                transform: translateX(50%);
+                flex-direction: row !important;
+                padding: 8px 16px !important;
+                border-radius: 9999px !important;
+            }
+        }
+
+        .capsule-btn {
+            border-radius: 9999px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="min-h-screen relative pb-20">
+<!-- TOP HEADER -->
+<header class="w-full bg-white/80 backdrop-filter blur-md border-b border-sage-100 sticky top-0 z-30">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+<div class="flex items-center space-x-3">
+<div class="w-12 h-12 rounded-2xl bg-sage-300 flex items-center justify-center text-white shadow-sm">
+<i class="fa-solid font-bold text-xl fa-wheat-awn text-emerald-950"></i>
+</div>
+<div>
+<h1 class="text-xl font-bold text-sage-700 leading-tight">사과 과수화상병 AI 판별 솔루션</h1>
+<p class="text-xs text-gray-500">사과 정상·과수화상병 의심 판별을 위한 농가 보조 화면</p>
+</div>
+</div>
+<div class="flex items-center space-x-3">
+<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+<span class="w-2 h-2 mr-1.5 bg-emerald-500 rounded-full animate-ping"></span>
+                    YOLO 연동 전 · 예시 화면
+                </span>
+<span class="hidden sm:inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-pearGold-light text-pearGold-dark border border-pearGold/30">
+<i class="fa-solid fa-apple-whole mr-1"></i> 사과 전용 분석
+                </span>
+</div>
+</div>
+</header>
+<!-- ALWAYS VISIBLE FLOATING SIDEBAR NAVIGATION -->
+<aside class="floating-nav flex flex-col items-center space-y-4 py-5 px-3 rounded-full shadow-float">
+<!-- MENU 1: MAIN -->
+<button class="nav-btn active group relative w-12 h-12 rounded-full flex items-center justify-center transition-all bg-sage-500 text-white shadow-md" id="nav-main" onclick="switchTab('main')">
+<i class="fa-solid fa-cloud-arrow-up text-lg"></i>
+<!-- Tooltip Desktop -->
+<span class="hidden md:block absolute right-16 bg-sage-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-md pointer-events-none">
+                ① 메인 (Upload &amp; Detect)
+            </span>
+</button>
+<!-- MENU 2: GALLERY -->
+<button class="nav-btn group relative w-12 h-12 rounded-full flex items-center justify-center transition-all text-sage-700 hover:bg-sage-100" id="nav-gallery" onclick="switchTab('gallery')">
+<i class="fa-solid fa-images text-lg"></i>
+<!-- Tooltip Desktop -->
+<span class="hidden md:block absolute right-16 bg-sage-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-md pointer-events-none">
+                ② 상세 (Gallery &amp; Filter)
+            </span>
+</button>
+<!-- MENU 3: CHATBOT -->
+<button class="nav-btn group relative w-12 h-12 rounded-full flex items-center justify-center transition-all text-sage-700 hover:bg-sage-100" id="nav-chatbot" onclick="switchTab('chatbot')">
+<i class="fa-solid fa-robot text-lg"></i>
+<!-- Tooltip Desktop -->
+<span class="hidden md:block absolute right-16 bg-sage-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-md pointer-events-none">
+                ③ AI 챗봇 (Farm Assistant)
+            </span>
+</button>
+<div class="hidden md:block w-8 h-[1px] bg-sage-200 my-1"></div>
+<!-- QUICK REPORT ICON -->
+<button class="group relative w-11 h-11 rounded-full bg-dustyRed text-white flex items-center justify-center shadow-md hover:bg-dustyRed-dark transition-all" onclick="openReportModal()">
+<i class="fa-solid fa-phone text-sm"></i>
+<span class="hidden md:block absolute right-16 bg-dustyRed text-white text-xs font-semibold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-md pointer-events-none">
+                농업기술센터 안내
+            </span>
+</button>
+</aside>
+<!-- MAIN CONTAINER -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+<main class="space-y-8 pr-0 md:pr-16">
+<!-- 1. 메인 페이지 SECTION (Upload & Detect) -->
+<section class="page-section space-y-6" id="section-main">
+<!-- TOP SUMMARY WIDGETS -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- Total Inspect -->
+<div class="bg-white p-5 rounded-3xl border border-sage-100 shadow-soft flex items-center justify-between">
+<div>
+<p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">총 검사 수</p>
+<h3 class="text-3xl font-extrabold text-sage-700 mt-1" id="stat-total">6</h3>
+<p class="text-xs text-gray-500 mt-1"><i class="fa-solid fa-image mr-1"></i>최근 업로드 포함</p>
+</div>
+<div class="w-12 h-12 rounded-2xl bg-sage-50 text-sage-500 flex items-center justify-center text-lg">
+<i class="fa-solid fa-folder-open"></i>
+</div>
+</div>
+<!-- Normal Apples/Pears -->
+<div class="bg-white p-5 rounded-3xl border border-sage-100 shadow-soft flex items-center justify-between">
+<div>
+<p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">정상 사과 건수</p>
+<h3 class="text-3xl font-extrabold text-emerald-600 mt-1" id="stat-normal">4</h3>
+<p class="text-xs text-emerald-600 mt-1"><i class="fa-solid fa-check-circle mr-1"></i>정상 생육 상태</p>
+</div>
+<div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg">
+<i class="fa-solid fa-leaf"></i>
+</div>
+</div>
+<!-- Fire Blight Pear -->
+
+<!-- Fire Blight Apple -->
+<div class="bg-white p-5 rounded-3xl border border-sage-100 shadow-soft flex items-center justify-between">
+<div>
+<p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">사과화상병 의심</p>
+<h3 class="text-3xl font-extrabold text-dustyRed mt-1" id="stat-apple-blight">2</h3>
+<p class="text-xs text-dustyRed mt-1"><i class="fa-solid fa-biohazard mr-1"></i>관할 농업기술센터 확인 권장</p>
+</div>
+<div class="w-12 h-12 rounded-2xl bg-dustyRed-light/40 text-dustyRed flex items-center justify-center text-lg">
+<i class="fa-solid fa-apple-whole"></i>
+</div>
+</div>
+</div>
+<!-- URGENT ALERT BANNER (If Blight Detected) -->
+<div class="bg-gradient-to-r from-dustyRed/95 to-red-600 text-white p-6 rounded-3xl shadow-lg flex flex-col md:flex-row items-center justify-between animate-alert" id="urgent-alert">
+<div class="flex items-center space-x-4 mb-4 md:mb-0">
+<div class="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-2xl flex-shrink-0">
+<i class="fa-solid fa-circle-exclamation text-white"></i>
+</div>
+<div>
+<div class="flex items-center space-x-2">
+<span class="bg-white text-dustyRed font-bold text-xs px-2.5 py-0.5 rounded-full">긴급 알림</span>
+<h4 class="text-lg font-bold">사과 과수화상병 의심 사례 2건 표시 중</h4>
+</div>
+<p class="text-sm text-red-100 mt-1">과수화상병 의심 증상은 관할 농업기술센터에 문의하여 확인하세요. 화면의 예시는 확진 결과가 아닙니다.</p>
+</div>
+</div>
+<button class="capsule-btn px-6 py-3 bg-white text-dustyRed font-bold shadow-md hover:bg-red-50 hover:shadow-lg flex items-center space-x-2 text-sm whitespace-nowrap" onclick="openReportModal()">
+<i class="fa-solid fa-phone-volume"></i>
+<span>신고 안내 확인</span>
+</button>
+</div>
+<!-- DRAG & DROP MULTI-IMAGE UPLOAD -->
+<div class="bg-white rounded-3xl p-8 border border-sage-100 shadow-soft">
+<div class="flex flex-col md:flex-row items-md-center justify-between pb-6 mb-6 border-b border-gray-100">
+<div>
+<h2 class="text-xl font-bold text-sage-700 flex items-center gap-2">
+<i class="fa-solid fa-cloud-arrow-up text-sage-500"></i>
+                                다중 사과 이미지 업로드 &amp; YOLO 분석
+                            </h2>
+<p class="text-sm text-gray-500 mt-1">사과나무 잎/열매/가지/줄기 사진을 드래그하여 올리거나 탐색기를 열어주세요.</p>
+</div>
+<div class="mt-4 md:mt-0 flex items-center space-x-3">
+<span class="text-xs text-gray-400">모델 상태: <strong class="text-sage-700">미연동 (예시)</strong></span>
+<button class="capsule-btn px-6 py-2.5 bg-sage-500 text-white font-semibold text-sm hover:bg-sage-700 shadow-md hover:shadow-lg flex items-center space-x-2" id="btn-run-detection" onclick="simulateYoloDetection()">
+<i class="fa-solid fa-play"></i>
+<span>사과 예시 결과 보기</span>
+</button>
+</div>
+</div>
+<!-- Dropzone Area -->
+<div class="border-2 border-dashed border-sage-300 hover:border-sage-500 rounded-3xl p-10 text-center cursor-pointer bg-sage-50/50 hover:bg-sage-50 transition-all duration-200" id="dropzone" onclick="document.getElementById('file-input').click()">
+<input accept="image/*" class="hidden" id="file-input" multiple="" onchange="handleFileSelect(event)" type="file"/>
+<div class="w-16 h-16 bg-white rounded-full mx-auto flex items-center justify-center text-sage-500 text-2xl shadow-sm mb-4">
+<i class="fa-solid fa-images"></i>
+</div>
+<h3 class="text-base font-bold text-sage-700">사과 이미지 파일들을 이곳에 드래그하세요</h3>
+<p class="text-xs text-gray-400 mt-1">PNG, JPG, JPEG 지원 (최대 10개 이미지 동시 분석 가능)</p>
+<button class="mt-4 capsule-btn px-5 py-2 bg-white text-sage-700 border border-sage-300 text-xs font-semibold hover:bg-sage-100" type="button">
+                            파일 선택하기
+                        </button>
+</div>
+<!-- Upload Preview List -->
+<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-6 hidden" id="preview-container">
+<!-- JS populates uploaded preview thumbnails -->
+</div>
+</div>
+</section>
+<!-- 2. 상세 페이지 SECTION (Gallery & Filter & PDF) -->
+<section class="page-section space-y-6 hidden" id="section-gallery">
+<div class="bg-white rounded-3xl p-8 border border-sage-100 shadow-soft">
+<div class="flex flex-col md:flex-row items-start md:items-center justify-between pb-6 mb-6 border-b border-gray-100 gap-4">
+<div>
+<h2 class="text-xl font-bold text-sage-700 flex items-center gap-2">
+<i class="fa-solid fa-border-all text-sage-500"></i>
+                                탐지 결과 갤러리 &amp; 클래스 필터
+                            </h2>
+<p class="text-sm text-gray-500 mt-1">사과 정상 및 과수화상병 의심 예시 결과입니다. 실제 YOLO 추론은 연결되지 않았습니다.</p>
+</div>
+<!-- PDF DOWNLOAD BUTTON -->
+<button class="capsule-btn px-5 py-2.5 bg-dustyRed text-white font-semibold text-sm hover:bg-dustyRed-dark shadow-md flex items-center space-x-2" onclick="downloadPDFReport()">
+<i class="fa-solid fa-file-pdf"></i>
+<span>방제 진단 보고서 PDF 다운로드</span>
+</button>
+</div>
+<!-- 4대 클래스 필터 버튼 그룹 -->
+<div class="flex flex-wrap gap-2 mb-6">
+<button class="gallery-filter-btn active capsule-btn px-4 py-2 text-xs font-bold bg-sage-500 text-white shadow-sm" onclick="filterGallery('all')">
+                            전체 (6)
+                        </button>
+
+<button class="gallery-filter-btn capsule-btn px-4 py-2 text-xs font-medium bg-emerald-50 text-emerald-700 hover:bg-emerald-100" onclick="filterGallery('normal_apple')">
+<i class="fa-solid fa-circle text-[8px] mr-1 text-emerald-500"></i> 정상 사과 (4)
+                        </button>
+
+<button class="gallery-filter-btn capsule-btn px-4 py-2 text-xs font-medium bg-dustyRed-light/40 text-dustyRed font-bold hover:bg-dustyRed-light" onclick="filterGallery('apple_blight')">
+<i class="fa-solid fa-biohazard text-[10px] mr-1 text-dustyRed"></i> 사과화상병 의심 (2)
+                        </button>
+</div>
+<!-- GALLERY GRID -->
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6" id="gallery-grid">
+<!-- Dynamically generated items from JS -->
+</div>
+</div>
+</section>
+<!-- 3. AI 챗봇 페이지 SECTION (Farm Assistant) -->
+<section class="page-section space-y-6 hidden" id="section-chatbot">
+<div class="bg-white rounded-3xl border border-sage-100 shadow-soft overflow-hidden flex flex-col h-[700px]">
+<!-- CHAT HEADER -->
+<div class="bg-sage-50 px-6 py-4 border-b border-sage-100 flex items-center justify-between">
+<div class="flex items-center space-x-3">
+<div class="w-10 h-10 rounded-full bg-sage-500 text-white flex items-center justify-center text-lg shadow-sm">
+<i class="fa-solid fa-robot"></i>
+</div>
+<div>
+<h3 class="font-bold text-sage-700 text-sm">사과 과수화상병 안내 도우미 (예시)</h3>
+<p class="text-xs text-emerald-600 flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
+                                    예시 데이터 표시 중 (정상 4 / 의심 2)
+                                </p>
+</div>
+</div>
+<span class="text-xs text-gray-400 bg-white px-3 py-1 rounded-full border border-gray-200">
+<i class="fa-solid fa-shield-halved mr-1 text-sage-500"></i>안내 정보 · 공식 진단 아님
+                        </span>
+</div>
+<!-- QUICK ACTION CHIPS -->
+<div class="px-6 py-3 bg-white border-b border-gray-100 flex items-center space-x-2 overflow-x-auto text-xs">
+<span class="text-gray-400 whitespace-nowrap font-medium"><i class="fa-solid fa-bolt text-amber-400 mr-1"></i>빠른 질문:</span>
+<button class="capsule-btn px-3 py-1.5 bg-sage-50 text-sage-700 hover:bg-sage-100 border border-sage-200 whitespace-nowrap" onclick="sendQuickPrompt('과수화상병 예방 및 발생 시 법정 매립 절차 알려줘')">
+                            📋 과수화상병 예방 및 매립 절차
+                        </button>
+<button class="capsule-btn px-3 py-1.5 bg-dustyRed-light/30 text-dustyRed hover:bg-dustyRed-light/60 border border-dustyRed/20 whitespace-nowrap font-medium" onclick="sendQuickPrompt('현재 사과 예시 결과 요약해줘')">
+                            📊 현재 과수원 감염 요약해줘
+                        </button>
+<button class="capsule-btn px-3 py-1.5 bg-pearGold-light text-pearGold-dark hover:bg-pearGold/20 border border-pearGold/30 whitespace-nowrap" onclick="sendQuickPrompt('사과 과수화상병의 주요 증상이 뭐야?')">
+                            🍎 사과 화상병 증상
+                        </button>
+</div>
+<!-- CHAT MESSAGES AREA -->
+<div class="flex-1 p-6 overflow-y-auto space-y-4 bg-cream/40" id="chat-messages">
+<!-- Bot Message -->
+<div class="flex items-start space-x-3">
+<div class="w-8 h-8 rounded-full bg-sage-500 text-white flex items-center justify-center text-xs flex-shrink-0 mt-1">
+<i class="fa-solid fa-robot"></i>
+</div>
+<div class="max-w-[80%] bg-white p-4 rounded-2xl rounded-tl-none border border-sage-100 shadow-sm text-sm text-gray-700 space-y-2">
+<p class="font-bold text-sage-700">안녕하세요! 과수화상병 AI 농가 전담 도우미입니다.</p>
+<p>현재 화면은 사과 정상 4건과 사과 과수화상병 의심 2건의 예시 데이터를 보여줍니다. 실제 AI 진단 결과가 아닙니다.</p>
+<p class="text-xs text-gray-500 bg-sage-50 p-2.5 rounded-xl border border-sage-100">
+                                    💡 <strong>팁:</strong> 화상병 발생 시 확산 방지를 위해 작업 도구 소독 및 빠른 확진 신고가 핵심입니다. 궁금하신 방제 조치나 가이드라인을 질문해 주세요!
+                                </p>
+</div>
+</div>
+</div>
+<!-- CHAT INPUT AREA -->
+<div class="p-4 bg-white border-t border-gray-100">
+<form class="flex items-center space-x-2" id="chat-form" onsubmit="handleChatSubmit(event)">
+<input class="flex-1 px-5 py-3 rounded-full bg-gray-50 border border-gray-200 text-sm focus:outline-none focus:border-sage-500 focus:bg-white transition-all" id="chat-input" placeholder="과수화상병 대처법, 소독약제, 매립 규정 등을 질문하세요..." type="text"/>
+<button class="capsule-btn w-12 h-12 bg-sage-500 text-white hover:bg-sage-700 shadow-md flex items-center justify-center text-base flex-shrink-0" type="submit">
+<i class="fa-solid fa-paper-plane"></i>
+</button>
+</form>
+</div>
+</div>
+<!-- LEGAL GUIDELINE CARD -->
+<div class="bg-white p-6 rounded-3xl border border-sage-100 shadow-soft">
+<h4 class="font-bold text-sage-700 mb-3 flex items-center text-sm">
+<i class="fa-solid fa-gavel mr-2 text-sage-500"></i> 의심 증상 발견 시 안내
+                    </h4>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+<div class="p-3 bg-sage-50 rounded-2xl border border-sage-100">
+<strong class="text-sage-700 block mb-1">1. 신속한 신고 (1399)</strong>
+                            의심 증상 발견 시 시군 농업기술센터 또는 1399로 즉시 신고 접수
+                        </div>
+<div class="p-3 bg-amber-50/60 rounded-2xl border border-amber-100">
+<strong class="text-amber-700 block mb-1">2. 전염 방지 소독</strong>
+                            전정도구 등의 소독은 관할 기관의 최신 지침을 확인하세요.
+                        </div>
+<div class="p-3 bg-dustyRed-light/30 rounded-2xl border border-dustyRed/20">
+<strong class="text-dustyRed block mb-1">3. 매립 및 방제 명령</strong>
+                            확진 및 방제 범위는 관할 기관의 현장 조사와 명령에 따르세요.
+                        </div>
+</div>
+</div>
+</section>
+</main>
+</div>
+<!-- MODAL 1: CROP / IMAGE DETAILED VIEW MODAL -->
+<div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden" id="image-modal">
+<div class="bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl border border-sage-100">
+<div class="p-4 bg-sage-50 border-b border-sage-100 flex items-center justify-between">
+<h4 class="font-bold text-sage-700 text-sm" id="modal-title">탐지 상세 보기</h4>
+<button class="w-8 h-8 rounded-full bg-white text-gray-500 hover:text-gray-700 flex items-center justify-center" onclick="closeImageModal()">
+<i class="fa-solid fa-xmark"></i>
+</button>
+</div>
+<div class="p-6 space-y-4">
+<div class="relative rounded-2xl overflow-hidden bg-gray-900 border border-gray-200">
+<img alt="Detail" class="w-full h-72 object-cover" id="modal-img" src=""/>
+<!-- Example classification label (no actual lesion localization) -->
+<div class="absolute top-3 left-3 text-[10px] font-bold text-white shadow-sm" id="modal-bbox">
+<span class="bg-dustyRed px-1.5 py-0.5 rounded" id="modal-label">사과화상병 96.4%</span>
+</div>
+</div>
+<div class="bg-cream p-4 rounded-2xl border border-sage-100 text-xs space-y-1.5">
+<p><strong>클래스 구분:</strong> <span class="text-dustyRed font-bold" id="modal-class-text">사과 과수화상병 의심 (예시)</span></p>
+<p><strong>YOLO Confidence:</strong> <span id="modal-score">0.964</span></p>
+<p><strong>안내:</strong> AI 예측만으로 감염 여부를 확정하거나 임의로 제거하지 마세요. 관할 농업기술센터의 안내를 따르세요.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- MODAL 2: 1399 REPORT DIALOG MODAL -->
+<div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden" id="report-modal">
+<div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-sage-100 space-y-5 text-center">
+<div class="w-16 h-16 bg-dustyRed-light/40 text-dustyRed rounded-full mx-auto flex items-center justify-center text-2xl">
+<i class="fa-solid fa-phone-volume"></i>
+</div>
+<div>
+<h3 class="text-lg font-bold text-gray-800">국가 병해충 신고 센터 (1399)</h3>
+<p class="text-xs text-gray-500 mt-1">의심 증상 발견 시 관할 농업기술센터에 직접 문의하세요. 이 화면에서 자동 연결되지는 않습니다.</p>
+</div>
+<div class="bg-sage-50 p-4 rounded-2xl text-left text-xs space-y-2 border border-sage-100">
+<div class="flex justify-between">
+<span class="text-gray-500">신고 대표번호:</span>
+<strong class="text-dustyRed">관할 농업기술센터 문의</strong>
+</div>
+<div class="flex justify-between">
+<span class="text-gray-500">관할 기관:</span>
+<strong class="text-sage-700">농촌진흥청 / 지역 농업기술센터</strong>
+</div>
+<div class="flex justify-between">
+<span class="text-gray-500">현재 상태:</span>
+<strong class="text-amber-600">예시 화면 · 실제 신고 전송 안 됨</strong>
+</div>
+</div>
+<div class="flex space-x-3">
+<button class="flex-1 capsule-btn py-2.5 bg-gray-100 text-gray-600 text-xs font-semibold hover:bg-gray-200" onclick="closeReportModal()">
+                    닫기
+                </button>
+<button class="flex-1 capsule-btn py-2.5 bg-dustyRed text-white text-xs font-bold hover:bg-dustyRed-dark shadow-md" onclick="alert('이 화면에서는 신고 데이터를 전송하지 않습니다. 관할 농업기술센터에 직접 문의하세요.'); closeReportModal();">
+                    신고 방법 확인
+                </button>
+</div>
+</div>
+</div>
+<!-- JAVASCRIPT CODE -->
+<script>
+        // APPLE-ONLY MOCK DATASET FOR GALLERY
+        const sampleItems = [
+            { id: 1, type: 'apple_blight', title: '사과 과수원 A 구역 #1', score: 0.96, label: '사과화상병', img: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=600&auto=format&fit=crop', top: '25%', left: '30%', width: '40%', height: '40%' },
+            { id: 3, type: 'normal_apple', title: '사과 나무 정상 생육 #1', score: 0.98, label: '정상 사과', img: 'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=600&auto=format&fit=crop', top: '15%', left: '15%', width: '60%', height: '60%' },
+            { id: 5, type: 'apple_blight', title: '사과 나무 줄기 궤양 #2', score: 0.91, label: '사과화상병', img: 'https://images.unsplash.com/photo-1570913149827-d2ac84ab3f9a?w=600&auto=format&fit=crop', top: '35%', left: '35%', width: '35%', height: '40%' },
+            { id: 7, type: 'normal_apple', title: '사과 열매 정상 #2', score: 0.99, label: '정상 사과', img: 'https://images.unsplash.com/photo-1576179635662-9d1983e97e1e?w=600&auto=format&fit=crop', top: '10%', left: '10%', width: '70%', height: '70%' },
+            { id: 9, type: 'normal_apple', title: '사과 과수원 전체 #3', score: 0.94, label: '정상 사과', img: 'https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?w=600&auto=format&fit=crop', top: '30%', left: '30%', width: '40%', height: '40%' },
+            { id: 11, type: 'normal_apple', title: '사과 잎 생육 #4', score: 0.98, label: '정상 사과', img: 'https://images.unsplash.com/photo-1619546813926-a78fa6372cd2?w=600&auto=format&fit=crop', top: '15%', left: '15%', width: '60%', height: '60%' },
+        ];
+
+        // INIT ON LOAD
+        window.onload = function() {
+            renderGallery(sampleItems);
+        };
+
+        // TAB SWITCHING (Main vs Gallery vs Chatbot)
+        function switchTab(tabKey) {
+            // Hide all pages
+            document.querySelectorAll('.page-section').forEach(el => el.classList.add('hidden'));
+            
+            // Show selected page
+            const target = document.getElementById(`section-${tabKey}`);
+            if (target) target.classList.remove('hidden');
+
+            // Reset navbar button styles
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-sage-500', 'text-white', 'shadow-md');
+                btn.classList.add('text-sage-700', 'hover:bg-sage-100');
+            });
+
+            // Highlight active navbar button
+            const activeNav = document.getElementById(`nav-${tabKey}`);
+            if (activeNav) {
+                activeNav.classList.remove('text-sage-700', 'hover:bg-sage-100');
+                activeNav.classList.add('bg-sage-500', 'text-white', 'shadow-md');
+            }
+        }
+
+        // DRAG AND DROP UPLOAD SIMULATION
+        function handleFileSelect(e) {
+            const files = e.target.files;
+            if (!files.length) return;
+
+            const previewContainer = document.getElementById('preview-container');
+            previewContainer.classList.remove('hidden');
+            previewContainer.innerHTML = '';
+
+            Array.from(files).forEach((file, idx) => {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    const div = document.createElement('div');
+                    div.className = 'relative rounded-2xl overflow-hidden border border-sage-200 bg-gray-100 h-28 group';
+                    div.innerHTML = `
+                        <img src="${evt.target.result}" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <span class="text-[10px] bg-sage-500 text-white px-2 py-1 rounded-full">업로드 완료</span>
+                        </div>
+                    `;
+                    previewContainer.appendChild(div);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // APPLE-ONLY DEMO (NO MODEL INFERENCE)
+        function simulateYoloDetection() {
+            const btn = document.getElementById('btn-run-detection');
+            const originalHTML = btn.innerHTML;
+
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> best.pt 추론 중...`;
+
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+
+                // Toast Message
+                alert('이 페이지는 예시 화면입니다. 실제 YOLO 모델은 연결되지 않았습니다.\n사과 예시 6건(정상 4건, 화상병 의심 2건)을 확인하세요.');
+                
+                // Switch to Gallery View to see results
+                switchTab('gallery');
+            }, 1200);
+        }
+
+        // GALLERY RENDERING & FILTERS
+        function renderGallery(items) {
+            const grid = document.getElementById('gallery-grid');
+            grid.innerHTML = '';
+
+            items.forEach(item => {
+                let badgeClass = 'bg-emerald-500';
+                if (item.type === 'apple_blight') badgeClass = 'bg-dustyRed';
+
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-2xl overflow-hidden border border-sage-100 shadow-sm hover:shadow-md transition-all group cursor-pointer';
+                card.onclick = () => openImageModal(item);
+
+                card.innerHTML = `
+                    <div class="relative h-44 bg-gray-900 overflow-hidden">
+                        <img src="${item.img}" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                        
+                        <!-- Example classification label -->
+                        <div class="absolute top-3 left-3">
+                            <span class="${badgeClass} text-white text-[9px] font-bold px-1.5 py-0.5 rounded absolute -top-3 left-0 shadow-sm">
+                                ${item.label} ${(item.score * 100).toFixed(0)}%
+                            </span>
+                        </div>
+                    </div>
+                    <div class="p-4 flex items-center justify-between">
+                        <div>
+                            <h4 class="text-xs font-bold text-gray-800">${item.title}</h4>
+                            <p class="text-[10px] text-gray-400 mt-0.5">예시 점수: ${item.score}</p>
+                        </div>
+                        <span class="w-7 h-7 rounded-full bg-sage-50 text-sage-600 flex items-center justify-center text-xs group-hover:bg-sage-500 group-hover:text-white transition-colors">
+                            <i class="fa-solid fa-magnifying-glass-plus"></i>
+                        </span>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filterGallery(category) {
+            // Update filter button style
+            document.querySelectorAll('.gallery-filter-btn').forEach(btn => {
+                btn.classList.remove('bg-sage-500', 'text-white');
+                btn.classList.add('bg-sage-50', 'text-sage-700');
+            });
+
+            if (category === 'all') {
+                renderGallery(sampleItems);
+            } else {
+                const filtered = sampleItems.filter(i => i.type === category);
+                renderGallery(filtered);
+            }
+        }
+
+        // MODAL HANDLERS
+        function openImageModal(item) {
+            document.getElementById('modal-title').innerText = item.title;
+            document.getElementById('modal-img').src = item.img;
+            document.getElementById('modal-label').innerText = `${item.label} ${(item.score * 100).toFixed(1)}%`;
+            document.getElementById('modal-score').innerText = item.score;
+            document.getElementById('modal-class-text').innerText = item.label;
+
+            document.getElementById('image-modal').classList.remove('hidden');
+        }
+
+        function closeImageModal() {
+            document.getElementById('image-modal').classList.add('hidden');
+        }
+
+        function openReportModal() {
+            document.getElementById('report-modal').classList.remove('hidden');
+        }
+
+        function closeReportModal() {
+            document.getElementById('report-modal').classList.add('hidden');
+        }
+
+        // DOWNLOAD PDF REPORT SIMULATION
+        function downloadPDFReport() {
+            alert('이 화면에는 PDF 생성 기능이 연결되어 있지 않습니다.');
+        }
+
+        // CHATBOT INTERACTION SIMULATION
+        function handleChatSubmit(e) {
+            e.preventDefault();
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            appendChatMessage('user', text);
+            input.value = '';
+
+            // Simulate Bot AI Response
+            setTimeout(() => {
+                let reply = "농가님의 질문을 분석 중입니다. 과수화상병 의심 시 임의로 가지를 제거하지 말고 관할 농업기술센터에 문의하세요.";
+                if (text.includes('요약') || text.includes('상태')) {
+                    reply = "현재 화면의 사과 이미지 예시 6건 중 정상 4건, 과수화상병 의심 2건이 표시됩니다. 실제 모델 판별 결과가 아닙니다.";
+                } else if (text.includes('매립') || text.includes('절차') || text.includes('예방')) {
+                    reply = "사과 과수화상병 의심 시 관할 농업기술센터에 문의하세요. 현장 조사와 공식 방제 지침에 따라 조치해야 합니다.";
+                }
+                appendChatMessage('bot', reply);
+            }, 600);
+        }
+
+        function sendQuickPrompt(promptText) {
+            document.getElementById('chat-input').value = promptText;
+            handleChatSubmit(new Event('submit'));
+        }
+
+        function appendChatMessage(sender, text) {
+            const container = document.getElementById('chat-messages');
+            const div = document.createElement('div');
+
+            if (sender === 'user') {
+                div.className = 'flex items-start justify-end space-x-3';
+                div.innerHTML = `
+                    <div class="max-w-[80%] bg-sage-500 text-white p-3.5 rounded-2xl rounded-tr-none text-sm shadow-sm">
+                        ${text}
+                    </div>
+                `;
+            } else {
+                div.className = 'flex items-start space-x-3';
+                div.innerHTML = `
+                    <div class="w-8 h-8 rounded-full bg-sage-500 text-white flex items-center justify-center text-xs flex-shrink-0 mt-1">
+                        <i class="fa-solid fa-robot"></i>
+                    </div>
+                    <div class="max-w-[80%] bg-white p-4 rounded-2xl rounded-tl-none border border-sage-100 shadow-sm text-sm text-gray-700 whitespace-pre-line">
+                        ${text}
+                    </div>
+                `;
+            }
+
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+services:
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-farm_doctor}
+      MYSQL_USER: ${MYSQL_USER:-farm_doctor}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-local-development-only}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-local-root-development-only}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u${MYSQL_USER:-farm_doctor}", "-p${MYSQL_PASSWORD:-local-development-only}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-mysql+pymysql://farm_doctor:local-development-only@db:3306/farm_doctor?charset=utf8mb4}
+      CORS_ORIGINS: http://localhost:${FRONTEND_PORT:-5173}
+      STORAGE_BACKEND: ${STORAGE_BACKEND:-local}
+      LOCAL_STORAGE_PATH: /app/uploads
+      S3_ENDPOINT_URL: ${S3_ENDPOINT_URL:-}
+      S3_BUCKET: ${S3_BUCKET:-}
+      AWS_REGION: ${AWS_REGION:-ap-northeast-2}
+      S3_CREATE_BUCKET: ${S3_CREATE_BUCKET:-true}
+      MODEL_PATH: ${MODEL_PATH:-/app/models/best.pt}
+      MODEL_VERSION: ${MODEL_VERSION:-apple_binary_v1}
+      MAX_UPLOAD_SIZE_MB: ${MAX_UPLOAD_SIZE_MB:-10}
+      MAX_UPLOAD_FILES: ${MAX_UPLOAD_FILES:-10}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      CHAT_MODEL: ${CHAT_MODEL:-}
+      CHAT_REQUESTS_PER_MINUTE: ${CHAT_REQUESTS_PER_MINUTE:-10}
+      CHAT_MAX_INPUT_CHARS: ${CHAT_MAX_INPUT_CHARS:-1000}
+      CHAT_TIMEOUT_SECONDS: ${CHAT_TIMEOUT_SECONDS:-30}
+      CHAT_RETENTION_DAYS: ${CHAT_RETENTION_DAYS:-30}
+      OPENAI_VECTOR_STORE_ID: ${OPENAI_VECTOR_STORE_ID:-}
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    volumes:
+      - ./backend:/app
+      - ./inference_api/models:/app/models:ro
+      - local_uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+    environment:
+      VITE_API_PROXY_TARGET: http://backend:8000
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+    depends_on:
+      - backend
+
+volumes:
+  mysql_data:
+  local_uploads:
+  frontend_node_modules:

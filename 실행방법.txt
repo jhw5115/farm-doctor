@@ -1,0 +1,54 @@
+사과 과수화상병 AI 판별 서비스 실행 방법
+
+1. Docker Desktop을 실행합니다.
+
+2. PowerShell에서 프로젝트 경로로 이동합니다.
+   Set-Location C:\Users\mbc\aws
+
+3. 환경 변수 파일을 만듭니다.
+   Copy-Item .env.example .env
+
+4. 컨테이너를 빌드하고 시작합니다.
+   docker compose up --build
+
+5. 브라우저에서 다음 주소를 엽니다.
+   화면: http://localhost:5173
+   API 상태: http://localhost:8000/api/v1/health
+   API 문서: http://localhost:8000/docs
+
+YOLO 모델 연결
+
+- 검증된 YOLO Classification 모델 파일 이름은 best.pt여야 합니다.
+- 모델 파일을 다음 경로에 넣습니다.
+  C:\Users\mbc\aws\inference_api\models\best.pt
+- 모델 클래스는 정확히 다음 두 개여야 합니다.
+  apple_healthy
+  apple_fire_blight
+- 모델을 추가하거나 교체한 뒤 컨테이너를 다시 시작합니다.
+  docker compose restart backend
+
+모델이 없거나 두 클래스 모델이 아닌 경우:
+
+- 서버는 임의의 판별 결과를 만들지 않습니다.
+- 업로드 파일은 분석 실패 상태로 기록되며, 화면에 모델 연결 대기 사유가 표시됩니다.
+
+종료 방법
+
+  docker compose down
+
+데이터베이스와 로컬 업로드 파일까지 함께 삭제하려면 다음 명령을 사용합니다.
+주의: 검사 이력과 업로드 파일이 삭제됩니다.
+
+  docker compose down -v
+
+======================================
+
+도커 기본 명령어
+- 이미지 빌드 : docker compose up --build
+- 컨테이너 실행 상태 확인 : docker compose ps
+- 실행 로그 확인 docker compose ps
+======================================
+
+
+
+

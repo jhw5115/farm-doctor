@@ -1,0 +1,10 @@
+crop,disease,class_id,class_name,source
+1,0,0,pear_healthy,local_json_user_approved
+1,1,1,pear_scab,local_json_user_approved
+1,2,2,pear_fire_blight,local_json_user_approved
+2,0,3,apple_healthy,local_json_user_approved
+2,3,4,apple_brown_spot,local_json_user_approved
+2,4,5,apple_fire_blight,local_json_user_approved
+2,5,6,apple_valsa_canker,local_json_user_approved
+2,6,7,apple_alternaria_leaf_spot,local_json_user_approved
+2,7,8,apple_anthracnose,local_json_user_approved

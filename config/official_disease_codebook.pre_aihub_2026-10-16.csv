@@ -1,0 +1,10 @@
+crop,disease,class_id,class_name,official_disease_name,provenance
+1,0,0,pear_healthy,배 정상,"user-supplied official list (normalized here; original codebook file not found)"
+1,1,1,pear_scab,배검은별무늬병,"user-supplied official list (normalized here; original codebook file not found)"
+1,2,2,pear_fire_blight,배과수화상병,"user-supplied official list (normalized here; original codebook file not found)"
+2,3,3,apple_healthy,사과 정상,"user-supplied official list (normalized here; original codebook file not found)"
+2,4,4,apple_brown_spot,사과갈색무늬병,"user-supplied official list (normalized here; original codebook file not found)"
+2,5,5,apple_fire_blight,사과과수화상병,"user-supplied official list (normalized here; original codebook file not found)"
+2,6,6,apple_valsa_canker,사과부란병,"user-supplied official list (normalized here; original codebook file not found)"
+2,7,7,apple_alternaria_leaf_spot,사과점무늬낙엽병,"user-supplied official list (normalized here; original codebook file not found)"
+2,8,8,apple_anthracnose,사과탄저병,"user-supplied official list (normalized here; original codebook file not found)"

@@ -1,0 +1,10 @@
+crop,disease,class_id,class_name,official_disease_name,source_url,dataset_id,dataset_version,published_on,verified_on,source_access_status
+1,0,0,pear_healthy,배 정상,https://www.aihub.or.kr/aihubdata/data/view.do?aihubDataSe=data&currMenu=115&dataSetSn=146&topMenu=100,146,1.0,2021-06-25,2026-10-16,user_confirmed_aihub_construction_count_table
+1,1,1,pear_scab,배검은별무늬병,https://www.aihub.or.kr/aihubdata/data/view.do?aihubDataSe=data&currMenu=115&dataSetSn=146&topMenu=100,146,1.0,2021-06-25,2026-10-16,user_confirmed_aihub_construction_count_table
+1,2,2,pear_fire_blight,배과수화상병,https://www.aihub.or.kr/aihubdata/data/view.do?aihubDataSe=data&currMenu=115&dataSetSn=146&topMenu=100,146,1.0,2021-06-25,2026-10-16,user_confirmed_aihub_construction_count_table
+2,0,3,apple_healthy,사과 정상,https://www.aihub.or.kr/aihubdata/data/view.do?aihubDataSe=data&currMenu=115&dataSetSn=146&topMenu=100,146,1.0,2021-06-25,2026-10-16,user_confirmed_aihub_construction_count_table
+2,3,4,apple_brown_spot,사과갈색무늬병,https://www.aihub.or.kr/aihubdata/data/view.do?aihubDataSe=data&currMenu=115&dataSetSn=146&topMenu=100,146,1.0,2021-06-25,2026-10-16,user_confirmed_aihub_construction_count_table
+2,4,5,apple_fire_blight,사과과수화상병,https://www.aihub.or.kr/aihubdata/data/view.do?aihubDataSe=data&currMenu=115&dataSetSn=146&topMenu=100,146,1.0,2021-06-25,2026-10-16,user_confirmed_aihub_construction_count_table
+2,5,6,apple_valsa_canker,사과부란병,https://www.aihub.or.kr/aihubdata/data/view.do?aihubDataSe=data&currMenu=115&dataSetSn=146&topMenu=100,146,1.0,2021-06-25,2026-10-16,user_confirmed_aihub_construction_count_table
+2,6,7,apple_alternaria_leaf_spot,사과점무늬낙엽병,https://www.aihub.or.kr/aihubdata/data/view.do?aihubDataSe=data&currMenu=115&dataSetSn=146&topMenu=100,146,1.0,2021-06-25,2026-10-16,user_confirmed_aihub_construction_count_table
+2,7,8,apple_anthracnose,사과탄저병,https://www.aihub.or.kr/aihubdata/data/view.do?aihubDataSe=data&currMenu=115&dataSetSn=146&topMenu=100,146,1.0,2021-06-25,2026-10-16,user_confirmed_aihub_construction_count_table

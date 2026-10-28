@@ -1,0 +1,6 @@
+﻿check,group_count,affected_images_or_pairs,cross_split_count,status,method_and_limitations
+exact_sha256_duplicates,17,34,0,PASS,Compared source SHA-256 groups in classification metadata; repeated hashes remain within one split.
+near_duplicate_candidates_dhash,14,14,0,PASS,"Compared pairs from duplicate_images.csv with splits; dHash is a candidate signal, not proof of same object."
+filename_capture_sequence_groups,205,1027,0,PASS,Removed trailing frame/sequence number from source filename; heuristic groups remain within one split.
+same_physical_object_identity,,,,UNVERIFIED,No verified fruit/tree/orchard/capture-session IDs; filename groups cannot prove physical identity.
+class_split_distribution,27,1200,,SEE_CLASS_SPLIT_DISTRIBUTION,See class_split_distribution.csv; each class appears in all three splits.

@@ -1,0 +1,70 @@
+version: 1
+
+# Disease codes are interpreted together with crop.  The mapping below is
+# checked against the separately maintained AI Hub codebook, not the local
+# observation CSV.
+mapping:
+  approved: true
+  approved_by: "user"
+  approval_note: "User confirmed the AI Hub dataset 146 construction-count table; crop+disease pairs determine unique target IDs."
+  codebook_path: official_disease_codebook.csv
+  codebook_role: official_aihub_reference
+  official_source_url: "https://www.aihub.or.kr/aihubdata/data/view.do?aihubDataSe=data&currMenu=115&dataSetSn=146&topMenu=100"
+  official_dataset_id: "146"
+  official_dataset_version: "1.0"
+  official_published_on: "2021-06-25"
+  official_verified_on: "2026-10-16"
+  official_access_status: "user confirmed against the AI Hub construction-count table"
+  classes:
+    - id: 0
+      name: pear_healthy
+      crop: 1
+      disease: 0
+    - id: 1
+      name: pear_scab
+      crop: 1
+      disease: 1
+    - id: 2
+      name: pear_fire_blight
+      crop: 1
+      disease: 2
+    - id: 3
+      name: apple_healthy
+      crop: 2
+      disease: 0
+    - id: 4
+      name: apple_brown_spot
+      crop: 2
+      disease: 3
+    - id: 5
+      name: apple_fire_blight
+      crop: 2
+      disease: 4
+    - id: 6
+      name: apple_valsa_canker
+      crop: 2
+      disease: 5
+    - id: 7
+      name: apple_alternaria_leaf_spot
+      crop: 2
+      disease: 6
+    - id: 8
+      name: apple_anthracnose
+      crop: 2
+      disease: 7
+
+split:
+  train: 0.7
+  val: 0.2
+  test: 0.1
+  seed: 42
+  approved: true
+  approval_note: "User approved filename-derived, exact-hash, and near-duplicate grouping; groups are estimates, not verified tree/session IDs."
+  # This approved grouping is a conservative estimate, not verified orchard,
+  # tree, or capture-session identity.
+  group_strategy: filename_capture_prefix_user_approved_estimate
+  near_duplicate_hamming_threshold: 4
+
+detection:
+  bbox_semantics_verified: true
+  approval_note: "User supplied annotation schema defines points as the bbox coordinates of the notable subject/object; detection labels must not be described as lesion boxes."
