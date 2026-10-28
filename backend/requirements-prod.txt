@@ -1,0 +1,20 @@
+# Production-only, CPU runtime dependencies.  Keep the development ranges in
+# requirements.txt for local iteration; this file is used only by Dockerfile.prod.
+# The PyTorch CPU index is required for the +cpu wheels below.
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+fastapi==0.115.12
+uvicorn[standard]==0.34.3
+SQLAlchemy==2.0.41
+PyMySQL==1.1.1
+alembic==1.15.2
+httpx==0.28.1
+boto3==1.38.46
+python-multipart==0.0.20
+Pillow==11.2.1
+reportlab==4.4.1
+numpy==2.1.1
+opencv-python==4.10.0.84
+torch==2.5.1+cpu
+torchvision==0.20.1+cpu
+ultralytics==8.3.227
