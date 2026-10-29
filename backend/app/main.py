@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 from sqlalchemy import text
 from app.config import settings
 from app.database import engine
@@ -32,6 +33,11 @@ app.include_router(inspections_router)
 app.include_router(statistics_router)
 app.include_router(reports_router)
 app.include_router(chat_router)
+
+
+@app.get("/", include_in_schema=False)
+def root() -> RedirectResponse:
+    return RedirectResponse(url="/docs")
 
 
 @app.get("/api/v1/health", tags=["health"])
