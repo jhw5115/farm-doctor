@@ -135,3 +135,32 @@ python -m pytest
 - 동시 분석량, 분석 지연 목표, 운영 예산 및 CPU/GPU 선택.
 
 브랜드 `FireBlight AI`는 PRD의 임시 이름이며, 현재 UI에서는 한국어 서비스 설명명을 사용합니다.
+
+## AWS 배포용 GitHub 파일 관리
+
+GitHub에는 AWS가 애플리케이션을 다시 빌드하고 배포하는 데 필요한 **소스 코드와 설정**을 올립니다. 개인 PC에서 생성되거나, 비밀 정보 또는 대용량 산출물인 파일은 올리지 않습니다.
+
+### GitHub에 포함하는 파일
+
+- 백엔드: `backend/app/`, `backend/requirements*.txt`, `backend/Dockerfile*`, Alembic migration 파일
+- 프런트엔드: `frontend/src/`, `package.json`, `package-lock.json`, `Dockerfile.prod`, `nginx.conf`
+- 배포 및 개발 설정: `docker-compose.yml`, `.dockerignore`, `.gitignore`, `.env.example`
+- 운영 문서·검증 자료: `DEPLOYMENT_AWS.md`, `docs/`, 테스트와 재현 가능한 스크립트
+
+### GitHub에서 제외하는 파일
+
+| 대상 | 예시 | 제외 이유 |
+| --- | --- | --- |
+| 비밀값 | `.env`, AWS 접근 키, DB 비밀번호, OpenAI API 키 | 공개 저장소 또는 권한 있는 저장소에서도 유출 위험이 있습니다. AWS에서는 Secrets Manager 또는 SSM Parameter Store를 사용합니다. |
+| 설치 결과물 | `.venv/`, `node_modules/` | 운영체제마다 달라지고 용량이 큽니다. `requirements.txt`와 `package-lock.json`으로 다시 설치합니다. |
+| 실행 중 생성물 | `uploads/`, 로그, 캐시, `__pycache__/` | 컨테이너·PC마다 달라지며 다시 생성됩니다. 운영 업로드 파일은 S3에 보관합니다. |
+| AI 모델·학습 데이터 | `best.pt`, `*.pth`, 데이터셋, 대용량 ZIP | 대용량 산출물이며 접근 권한과 버전을 별도로 관리해야 합니다. |
+| 개인 설정·임시 파일 | `.aws/`, `.vscode/`, `.idea/`, `~$*.xlsx` | 개인 환경 설정 또는 자격 증명이 포함될 수 있습니다. |
+
+`.gitignore`에 등록된 파일은 `git add -A`를 실행해도 GitHub에 추가되지 않습니다. 현재 프로젝트에서는 `.env`, `.venv`, `node_modules`, `*.pt`, `*.pth`, `*.zip` 등이 이에 해당합니다. `.env.example`은 실제 비밀값이 없는 예시 파일이므로 포함합니다.
+
+### `best.pt` 모델 배포
+
+`best.pt`는 설치 과정에서 자동으로 만들어지는 파일이 아니라 학습이 끝난 AI 모델 파일입니다. 로컬 개발에서는 `inference_api/models/best.pt`에 별도로 두고 Docker Compose가 `/app/models/best.pt`로 읽기 전용 마운트합니다.
+
+AWS 운영 환경에서는 실제 모델 파일을 GitHub에 넣지 않습니다. Private S3 또는 EFS에 모델을 보관하고 ECS task가 읽도록 구성한 뒤, `MODEL_PATH`를 모델 파일 위치로 지정합니다. S3 방식을 사용할 경우 ECS Task Role에 모델 객체의 `s3:GetObject` 권한과 컨테이너 시작 시 모델을 내려받는 절차가 필요합니다. 배포 후 `/api/v1/health`에서 `model_ready: true`인지 확인합니다.
